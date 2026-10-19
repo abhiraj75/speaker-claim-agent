@@ -95,7 +95,11 @@ All four runs share the model, settings (`reasoning_effort=medium`, `seed=7`, 60
   - Regression (labelling, on target): A27:324:493, unknown became contradicted.
   - A13 and A28 are still wrong. v2 contradicted 3 of the 11 free-delivery sentences, against 2 of 11 for v1, so the rule did not change the behaviour.
   - Extraction is unchanged: no extraction fixes and no extraction regressions.
-  - gpt-5-mini is not fully deterministic even with a fixed seed, so ±2 labels is within run-to-run noise.
+  - gpt-5-mini is not fully deterministic even with a fixed seed. On the check split, v1 and v2 chose identical spans (94/94) but disagreed on 2 labels (A42:878:1046 and A48:688:846). Neither sentence is about shipping, so the v2 rule cannot explain them. That puts run-to-run noise at about ±2 labels, and v2's one fix and one regression are within it.
+- **Why the rule did not stick:**
+  - v1 already applied the right reading 9 times in 11, and its prompt already said "a condition applies only to its stated scope". The errors were occasional drift to a plausible wrong inference ("shipping excluded" means a shipping charge, so free delivery is false), not a missing rule. Restating the rule does not remove that drift.
+  - The new wording ("unknown unless a catalogue row states a delivery policy") still left room for the model to treat the price row's "shipping excluded" as that delivery policy, reinforced by the general "contradicted when a fact explicitly refutes it" rule. A27's own reason says the catalogue "does not support" free delivery, which argues for unknown, yet it labelled the sentence contradicted.
+- **What it indicates:** the baseline was already near its ceiling (at most +3 labels were possible), and the harness reported the no-gain result and the on-target regression honestly. A prompt rule is a weak lever for rare, inconsistent slips. The next candidates are fixes the model cannot ignore (a validator check that a contradicted label cites a fact on the claim's topic, or a majority vote over 3 labelling samples), each tested as its own single change after a noise baseline exists (see "Improvements and plan").
 
 ## Development workflow
 Built phase by phase with Claude Code from `CLAUDE.md`, a project guide holding the spec's rules, contracts and constants:
@@ -150,7 +154,7 @@ Actual output is in [runs/test_output.txt](runs/test_output.txt). Every test wri
 - The v2 change produced no measured gain (see above).
 - The reason-length check counts sentences by punctuation followed by a capital letter, so a reason like "vs. StoneWave" over-counts.
 - `POST /evaluation-runs` runs synchronously: a live development run takes about 17 minutes in a single request.
-- No noise estimate from repeated runs. With 3 v1 errors, differences of ±2 labels are not significant.
+- No repeated-run noise estimate. The only noise evidence is the v1-vs-v2 check comparison (2 unrelated label flips), so differences of ±2 labels are not significant.
 - Multi-brand lookup is supported (the schema allows any known brand, and several calls per turn are tested with the fake provider) but never happened live. The dataset's cross-brand claims compare against "RivalSound Trek", which is not in the catalogue, so there was nothing to look up and the correct label is unknown. v1 labelled both correctly.
 - The API was verified live: `GET /evaluation-runs/{id}` on the imported v1 development run returns 40 answers and 376 claims, and the 404 and 422 responses return clean `{type, message}` bodies.
 
