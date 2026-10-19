@@ -64,7 +64,7 @@ sequenceDiagram
     M-->>A: get_brand_facts(brand_id), one or more calls
     A->>T: execute (allowlist + brand check)
     T-->>A: fact_version, facts
-    A->>M: turn 2 (auto); turn 3 forces submit_claims
+    A->>M: turn 2 (auto), turn 3 forces submit_claims
     M-->>A: submit_claims([sentence_index, label, fact_ids, reason])
     A->>V: build_claims: Python offsets, quote, ids, labels, fact ids
     V-->>C: claims, or an answer-level error with zero claims
@@ -141,7 +141,7 @@ Actual output is in [runs/test_output.txt](runs/test_output.txt). Every test wri
 - No noise estimate from repeated runs. With 3 v1 errors, differences of ±2 labels are not significant.
 
 ## Time spent
-TODO
+About 3h15m in total, from roughly 1:30 to 4:45. This includes about 45 minutes of live model runs: around 17 minutes for each development run and about 5 minutes for each check run.
 
 ## AI assistance
 Built with Claude Code, driven phase by phase from `CLAUDE.md`.
