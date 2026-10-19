@@ -1,0 +1,9 @@
+fastapi==0.146.0
+httpx==0.28.1
+openai==3.35.1
+psycopg-binary==3.3.6
+psycopg[binary]==3.3.6
+pydantic==2.14.1
+pytest==9.1.1
+python-dotenv==1.2.4
+uvicorn==0.54.0
