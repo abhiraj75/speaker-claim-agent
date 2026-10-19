@@ -2,6 +2,76 @@
 
 A Python agent that reads long AI answers about speaker products, extracts their factual claim sentences and labels each one supported, contradicted or unknown, using only `data/brand_facts.csv`. It ships with a deterministic harness, a v1 baseline and a v2 variant, and a FastAPI + Postgres service. Spec: `docs/Assessment.md`.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Data["data/ (untouched CSVs)"]
+        A[answers.csv]
+        F[brand_facts.csv]
+        G[development_gold.csv]
+    end
+
+    subgraph Inference["Inference path (never reads gold)"]
+        D[data.py<br/>typed facts, hashes]
+        S[segment.py<br/>sentence offsets]
+        AG[agent.py<br/>max 3 turns]
+        T[tools.py<br/>allowlisted executor]
+        P[providers.py<br/>OpenAI / Fake]
+        V[validate.py<br/>contract checks]
+    end
+
+    subgraph Harness["Harness (post-save)"]
+        R[runner.py<br/>sequential runs]
+        SC[scorer.py<br/>exact spans, P/R/F1]
+    end
+
+    subgraph Service
+        API[api.py<br/>FastAPI]
+        DB[(Postgres<br/>runs / answer_results / claim_results)]
+    end
+
+    A --> D --> AG
+    F --> D --> T
+    S --> AG
+    AG <--> P
+    P <--> LLM((gpt-5-mini))
+    AG --> T
+    AG --> V
+    R --> AG
+    R --> FILES[runs/run_id.json<br/>runs/exchanges/]
+    FILES --> SC
+    G --> SC
+    SC --> FILES
+    R --> DB
+    API --> AG
+    API --> R
+    API --> DB
+```
+
+### One answer through the agent
+
+```mermaid
+sequenceDiagram
+    participant C as Caller (runner or /classify)
+    participant A as agent.py
+    participant M as gpt-5-mini
+    participant T as tools.py
+    participant V as validate.py
+    C->>A: answer_id, brand_id, question, ai_answer
+    A->>A: segment() into numbered sentences, wrap in untrusted_answer tags
+    A->>M: turn 1 (tool_choice=required)
+    M-->>A: get_brand_facts(brand_id), one or more calls
+    A->>T: execute (allowlist + brand check)
+    T-->>A: fact_version, facts
+    A->>M: turn 2 (auto); turn 3 forces submit_claims
+    M-->>A: submit_claims([sentence_index, label, fact_ids, reason])
+    A->>V: build_claims: Python offsets, quote, ids, labels, fact ids
+    V-->>C: claims, or an answer-level error with zero claims
+```
+
+The model never counts characters: it returns sentence indices and Python computes `start_char`, `end_char` and `quote`. Gold is joined only after a run's predictions are written to `runs/<run_id>.json`.
+
 ## Results (four live runs, gpt-5-mini-2025-08-07)
 
 | Run | Split | G | P | M | C | Extraction P / R / F1 | Joint P / R / F1 | Coverage | Answer errors | Report |
