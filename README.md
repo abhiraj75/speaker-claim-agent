@@ -1,4 +1,4 @@
-# Kasparro FSE claim agent
+# Claim Agent
 
 A Python agent that reads long AI answers about speaker products, extracts their factual claim sentences and labels each one supported, contradicted or unknown, using only `data/brand_facts.csv`. It ships with a deterministic harness, a v1 baseline and a v2 variant, and a FastAPI + Postgres service. Spec: `docs/Assessment.md`.
 
