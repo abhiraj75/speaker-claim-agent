@@ -109,3 +109,12 @@ def score(split, scheduled_ids, results, gold=None):
         },
     })
     return out
+
+
+def dev_matches(preds):
+    """Per-prediction match record against development gold (for claim_results.dev_match)."""
+    pairs, unmatched = match_claims(preds, load_gold())
+    out = {p["claim_id"]: {"matched": True, "gold_claim_id": g["claim_id"], "expected_label": g["expected_label"],
+                           "label_correct": p["label"] == g["expected_label"]} for p, g in pairs}
+    out.update({p["claim_id"]: {"matched": False} for p in unmatched})
+    return out
