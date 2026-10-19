@@ -115,15 +115,55 @@ def score_run(report):
     return report
 
 
+def persist(conn, report):
+    """Store a report in Postgres; development dev_match is recomputed by the scorer after the save."""
+    from app import db
+    dev = None
+    if report["split"] == "development" and report["status"] == "completed":
+        from app.scorer import dev_matches
+        dev = dev_matches(report["predictions"])
+    db.apply_schema(conn)
+    db.save_run(conn, report, dev)
+
+
+def import_report(path, conn):
+    """Load a saved runs/<run_id>.json into Postgres without calling the model. False if already imported."""
+    from app import db
+    report = json.loads(Path(path).read_text(encoding="utf-8"))
+    db.apply_schema(conn)
+    if db.run_exists(conn, report["run_id"]):
+        return False
+    persist(conn, report)
+    return True
+
+
+def _persist_if_available(report):
+    import psycopg
+    from app import db
+    try:
+        with db.connect() as conn:
+            persist(conn, report)
+    except psycopg.OperationalError:
+        print("DATABASE_URL unreachable: report saved to file only", flush=True)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m app.runner")
     ap.add_argument("--version", choices=("v1", "v2"))
     ap.add_argument("--split", choices=SPLITS)
+    ap.add_argument("--import", dest="import_path", nargs="+", metavar="REPORT")
     args = ap.parse_args(argv)
+    if args.import_path:
+        from app import db
+        with db.connect() as conn:
+            for path in args.import_path:
+                print(f"{path}: {'imported' if import_report(path, conn) else 'already imported'}")
+        return
     if not (args.version and args.split):
         ap.error("--version and --split are required")
     from app.providers import OpenAIProvider
-    report = run_split(args.split, args.version, OpenAIProvider(), log=lambda m: print(m, flush=True))
+    report = run_split(args.split, args.version, OpenAIProvider(), persist=_persist_if_available,
+                       log=lambda m: print(m, flush=True))
     print(json.dumps({k: report[k] for k in ("run_id", "status", "counts", "metrics")}, indent=2))
     print(f"report: runs/{report['run_id']}.json")
 
