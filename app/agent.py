@@ -42,10 +42,15 @@ def load_prompt(agent_version):
     return text
 
 
+def _escape(text):
+    # Escape every angle bracket so untrusted text cannot open or close a tag in any case/spacing variant.
+    # Display only: offsets are computed on the raw ai_answer. ponytail: fullwidth ＜＞ not folded.
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def user_message(inp, segments):
-    # Neutralise a closing tag inside answer text so it cannot end the untrusted block early.
-    lines = "\n".join(f"[{i}] {t}".replace("</untrusted_answer", "<\\/untrusted_answer") for i, _, _, t in segments)
-    return (f"answer_id: {inp['answer_id']}\nbrand_id: {inp['brand_id']}\nquestion: {inp['question']}\n"
+    lines = "\n".join(f"[{i}] {_escape(t)}" for i, _, _, t in segments)
+    return (f"answer_id: {inp['answer_id']}\nbrand_id: {inp['brand_id']}\nquestion: {_escape(inp['question'])}\n"
             f"<untrusted_answer>\n{lines}\n</untrusted_answer>")
 
 
