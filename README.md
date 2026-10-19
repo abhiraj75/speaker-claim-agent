@@ -9,7 +9,7 @@ A Python agent that reads long AI answers about speaker products, extracts their
 | v1 | development | 376 | 376 | 376 | 373 | 1.000 / 1.000 / 1.000 | 0.992 / 0.992 / 0.992 | 0.992 | 0 | [d22a05d2](runs/d22a05d2-137a-437e-b2e7-d308b7b6c305.json) |
 | v2 | development | 376 | 376 | 376 | 373 | 1.000 / 1.000 / 1.000 | 0.992 / 0.992 / 0.992 | 0.992 | 0 | [09977af4](runs/09977af4-e1a3-4a71-82de-42077927ddb2.json) |
 | v1 | check | null | 94 | null | null | null | null | null | 0 | [9c02ef39](runs/9c02ef39-e8ba-49ec-ae1d-01c0901507b7.json) |
-| v2 | check | null | CHECK_V2_P | null | null | null | null | null | CHECK_V2_ERR | [CHECK_V2_SHORT](runs/CHECK_V2_ID.json) |
+| v2 | check | null | 94 | null | null | null | null | null | 0 | [703e6b31](runs/703e6b31-f7d6-46d0-aba0-b60124468489.json) |
 
 Check-split quality is null rather than 0: the reviewer holds the gold. The check inputs (A41 to A50) were visible to me, so this is not a blind benchmark. Nothing was tuned on them; v1 and v2 were frozen at tag `freeze-v1-v2` before either check run.
 
