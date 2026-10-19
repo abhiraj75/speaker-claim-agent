@@ -4,3 +4,4 @@ PHASES.md
 __pycache__/
 *.pyc
 .pytest_cache/
+AI_ASSIST.md
