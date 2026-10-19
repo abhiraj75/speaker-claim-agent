@@ -69,8 +69,8 @@ def build_claims(answer_id, ai_answer, segments, selections):
 
 
 def _too_many_sentences(reason):
-    # ponytail: splits on terminal punctuation + whitespace, so "e.g. x" overcounts; fine for 2-sentence cap
-    return len(re.split(r"(?<=[.!?])\s+", reason.strip())) > 2
+    # ponytail: a new sentence = terminal punctuation, whitespace, capital letter; "vs. StoneWave" still overcounts
+    return len(re.split(r"(?<=[.!?])\s+(?=[A-Z])", reason.strip())) > 2
 
 
 def validate_claims(ai_answer, claims, answer_id=None, known_fact_ids=None):
