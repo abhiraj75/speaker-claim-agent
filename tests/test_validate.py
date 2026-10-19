@@ -32,6 +32,15 @@ def test_offsets_are_code_points():
     assert (c.start_char, c.end_char, c.quote) == (15, 24, "Next one.")
 
 
+@pytest.mark.parametrize("reason", [
+    "Costs approx. 12 hours. Matches e.g. the Mini row.",
+    "INR 1,299 vs. 2,499 fits. Fine.",
+    "One sentence without a full stop",
+])
+def test_two_sentence_reasons_with_abbreviations_pass(reason):
+    assert build_claims("A01", TEXT, SEGS, [sel(1, reason=reason)])
+
+
 def test_valid_empty_list():
     assert build_claims("A01", TEXT, SEGS, []) == []
     assert validate_claims(TEXT, []) == []
