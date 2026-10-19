@@ -134,7 +134,7 @@ def test_check_split_nulls():
     out = score("check", CHECK, [result("A41", preds)] + [result(a, []) for a in CHECK[1:]])
     assert out["P"] == 2 and out["counts"]["scheduled"] == 10
     for k in ("G", "M", "C", "extraction", "joint", "coverage", "matched_gold_ids", "missed_gold_ids",
-              "unmatched_prediction_ids", "wrong_label_ids", "per_tag"):
+              "unmatched_prediction_ids", "wrong_label_ids", "per_tag", "records"):
         assert out[k] is None, k
 
 

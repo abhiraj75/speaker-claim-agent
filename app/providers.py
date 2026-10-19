@@ -31,13 +31,17 @@ class ProviderError(Exception):
 
 
 class Provider(Protocol):
+    name: str
     model: str
     settings: dict
+    timeout: float | None
 
     def send(self, messages, tools, tool_choice) -> dict: ...
 
 
 class OpenAIProvider:
+    name = "openai"
+
     def __init__(self):
         load_dotenv()
         self.model = os.environ["MODEL"]
@@ -73,8 +77,10 @@ class OpenAIProvider:
 
 class FakeProvider:
     """Replays scripted responses (dicts or exceptions to raise) and records every outgoing payload."""
+    name = "fake"
     model = "fake-model"
     settings = {"seed": SEED}
+    timeout = None
 
     def __init__(self, script):
         self.script = list(script)
