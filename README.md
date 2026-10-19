@@ -64,7 +64,7 @@ sequenceDiagram
     M-->>A: get_brand_facts(brand_id), one or more calls
     A->>T: execute (allowlist + brand check)
     T-->>A: fact_version, facts
-    A->>M: turn 2 (auto); turn 3 forces submit_claims
+    A->>M: turn 2 (auto), turn 3 forces submit_claims
     M-->>A: submit_claims([sentence_index, label, fact_ids, reason])
     A->>V: build_claims: Python offsets, quote, ids, labels, fact ids
     V-->>C: claims, or an answer-level error with zero claims
