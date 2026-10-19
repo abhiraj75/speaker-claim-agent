@@ -66,7 +66,7 @@ def score(split, scheduled_ids, results, gold=None):
            "error_counts": dict(Counter(r["error"]["type"] for r in results if r["status"] == "error")),
            "G": None, "P": len(preds), "M": None, "C": None, "extraction": None, "joint": None, "coverage": None,
            "matched_gold_ids": None, "missed_gold_ids": None, "unmatched_prediction_ids": None,
-           "wrong_label_ids": None, "per_tag": None}
+           "wrong_label_ids": None, "per_tag": None, "records": None}
     if split == "check" or not scheduled_ids:
         return out
     if split != "development":
@@ -98,5 +98,14 @@ def score(split, scheduled_ids, results, gold=None):
         "unmatched_prediction_ids": [p["claim_id"] for p in unmatched],
         "wrong_label_ids": wrong,
         "per_tag": dict(sorted(per_tag.items(), key=lambda kv: -kv[1]["gold"])),
+        "records": {
+            "missed": [{"claim_id": g["claim_id"], "quote": g["quote"], "expected": g["expected_label"],
+                        "tags": g["difficulty_tags"]} for g in gold if g["claim_id"] not in matched],
+            "extra": [{"claim_id": p["claim_id"], "quote": p["quote"], "predicted": p["label"],
+                       "reason": p["reason"]} for p in unmatched],
+            "wrong_label": [{"claim_id": g["claim_id"], "quote": g["quote"], "expected": g["expected_label"],
+                             "predicted": p["label"], "fact_ids": p["fact_ids"], "reason": p["reason"],
+                             "tags": g["difficulty_tags"]} for p, g in pairs if p["label"] != g["expected_label"]],
+        },
     })
     return out
