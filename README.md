@@ -140,6 +140,19 @@ Actual output is in [runs/test_output.txt](runs/test_output.txt). Every test wri
 - `POST /evaluation-runs` runs synchronously: a live development run takes about 17 minutes in a single request.
 - No noise estimate from repeated runs. With 3 v1 errors, differences of ±2 labels are not significant.
 
+## Improvements and plan with more time
+1. **Measure the noise floor first.** Repeat v1 and v2 on development 3 to 5 times each and report the mean and spread of joint F1, plus per-claim label flips. With only 3 v1 errors, no v1-vs-v2 difference can be judged without this.
+2. **Retry the price-condition bucket with a stronger single change.** The prompt rule did not stick: 3 of 11 free-delivery sentences were still contradicted. Try the next candidates one at a time:
+   - a worked example of a price row's condition versus a delivery claim, or
+   - a validator rule that a `contradicted` label must cite a fact row whose `field` covers the claim's topic.
+3. **Self-consistency for borderline labels.** Sample the labelling 3 times and take the majority, tested as its own version so its effect is measurable.
+4. **Run `POST /evaluation-runs` in the background.** Return 202 with the run ID, persist progress per answer, and let GET report the status. Today a development run blocks one request for about 17 minutes.
+5. **Bounded concurrency in the runner,** for example 4 to 8 workers with per-answer outcomes preserved. This would cut a development run from about 17 minutes to 3 to 5.
+6. **Cost and token reporting.** Usage is already captured per turn in the exchanges; aggregate it into the run report.
+7. **Explicit retry policy.** Retry once on timeout or provider error, record each attempt, and report attempts separately so turn counts stay honest.
+8. **A sturdier reason-length check.** Handle abbreviations such as "vs." properly instead of using the capital-letter heuristic.
+9. **CI.** A GitHub Actions workflow running `pytest` with a Postgres 16 service container, so the DB and API tests run on every push.
+
 ## Time spent
 About 3h15m in total, from roughly 1:30 to 4:45. This includes about 45 minutes of live model runs: around 17 minutes for each development run and about 5 minutes for each check run.
 
