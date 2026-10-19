@@ -97,6 +97,18 @@ All four runs share the model, settings (`reasoning_effort=medium`, `seed=7`, 60
   - Extraction is unchanged: no extraction fixes and no extraction regressions.
   - gpt-5-mini is not fully deterministic even with a fixed seed, so ±2 labels is within run-to-run noise.
 
+## Development workflow
+Built phase by phase with Claude Code from `CLAUDE.md`, a project guide holding the spec's rules, contracts and constants:
+1. Data, segmentation and validation
+2. Tools and agent loop, with a live smoke run on A01
+3. Scorer
+4. Runner and the v1 development run
+5. v2, freeze and check runs
+6. Postgres and FastAPI
+7. Docs
+
+After each phase the full test suite ran and passed, and I checked the phase's evidence (hashes, offsets, live exchanges, A01 against the gold, the v1 failure buckets, v1-vs-v2 flips). Then the phase was committed. Each commit is one phase, so the history shows the order.
+
 ## Design decisions
 - **Python segmentation and sentence-index selection.** Answers are split with `[^\s][^\n]*?[.!?](?=\s|$)`, and the model picks sentence indices instead of writing quotes. Offsets come from Python, so `quote == ai_answer[start:end]` holds by construction. This segmentation covers all 376 development gold spans exactly (tested).
 - **tool_choice schedule:** turn 1 `required`, turn 2 `auto`, turn 3 forced `submit_claims`. Max 3 turns. Several tool calls per turn are allowed.
@@ -139,6 +151,8 @@ Actual output is in [runs/test_output.txt](runs/test_output.txt). Every test wri
 - The reason-length check counts sentences by punctuation followed by a capital letter, so a reason like "vs. StoneWave" over-counts.
 - `POST /evaluation-runs` runs synchronously: a live development run takes about 17 minutes in a single request.
 - No noise estimate from repeated runs. With 3 v1 errors, differences of ±2 labels are not significant.
+- Multi-brand lookup is supported (the schema allows any known brand, and several calls per turn are tested with the fake provider) but never happened live. The dataset's cross-brand claims compare against "RivalSound Trek", which is not in the catalogue, so there was nothing to look up and the correct label is unknown. v1 labelled both correctly.
+- The API was verified live: `GET /evaluation-runs/{id}` on the imported v1 development run returns 40 answers and 376 claims, and the 404 and 422 responses return clean `{type, message}` bodies.
 
 ## Improvements and plan with more time
 1. **Measure the noise floor first.** Repeat v1 and v2 on development 3 to 5 times each and report the mean and spread of joint F1, plus per-claim label flips. With only 3 v1 errors, no v1-vs-v2 difference can be judged without this.
