@@ -1,7 +1,7 @@
 ============================= test session starts ==============================
-platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.7.0 -- /Users/abhiraj/Documents/Work/Projects/speaker-claim-agent/.venv/bin/python3.12
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.7.0 -- .../speaker-claim-agent/.venv/bin/python3.12
 cachedir: .pytest_cache
-rootdir: /Users/abhiraj/Documents/Work/Projects/speaker-claim-agent
+rootdir: .../speaker-claim-agent
 plugins: anyio-4.15.1
 collecting ... collected 110 items
 
