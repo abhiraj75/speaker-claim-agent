@@ -94,6 +94,14 @@ The `check` split (A41 to A50) is held out: it has no gold labels in this repo, 
 
 All four runs share the model, settings (`reasoning_effort=medium`, `seed=7`, 60s timeout, 3 max turns), scorer and data hashes. Sanitized exchanges for every answer are in `runs/exchanges/<run_id>/<answer_id>.json`, and a single-answer smoke exchange is in `runs/exchanges/smoke/A01.json`.
 
+The reports' `source_revision` values predate a history cleanup that reworded docs only, so they no longer resolve. The same code is at:
+
+| Report | Recorded `source_revision` | Equivalent commit |
+|---|---|---|
+| v1 development `d22a05d2` | `5401eb5` | `50003c1` |
+| v2 development `09977af4` | `8bbc603` | `4896850` |
+| v1 check `9c02ef39`, v2 check `703e6b31` | `9fd7b05` | `7cb8076` (tag `freeze-v1-v2`) |
+
 ## Experiment: v1 vs v2
 - **v1 failure diagnosis:** only 3 of 376 labels were wrong, with no extraction errors.
   - 2 errors (A13:511:680, A28:1499:1671): "Orders for <model> receive free delivery to every India postal code…" was labelled contradicted because the price row's condition says "shipping excluded". Gold says unknown: that condition only describes what the price covers, and no delivery-policy fact exists. v1 labelled the other 9 identical sentences correctly, so this is inconsistency, not a missing rule.
