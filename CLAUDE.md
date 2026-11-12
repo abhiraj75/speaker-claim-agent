@@ -13,7 +13,7 @@ Project guide: the rules, contracts and constants this codebase follows. If code
 - Saved exchanges and error messages are sanitized: no keys, headers, request IDs, stack traces.
 - Do not hardcode labels, infer labels from answer IDs or positions, use gold to locate spans, or tune on check answers A41 to A50.
 - Reproducibility: `agent_version` (v1 | v2) selects the prompt file and any v2-only behaviour. After the v1 dev run starts, never edit `prompts/v1.md` or v1 code paths. Model, temperature/reasoning_effort, seed, timeout, segmentation, validator and scorer are identical for v1 and v2.
-- One phase at a time. At the end of each phase print: files changed, tests run with real output, open issues. Then stop.
+- One change at a time. At the end of each change print: files changed, tests run with real output, open issues. Then stop.
 
 ## Stack
 Python 3.11+, openai SDK (Chat Completions function calling, called directly, no framework), pydantic v2, FastAPI + uvicorn, psycopg 3 (parameterized SQL only, no ORM), pytest, httpx, python-dotenv. Postgres 16 via docker. Exact pins in `requirements.txt`. Sequential runner (no concurrency).
@@ -45,7 +45,6 @@ app/api.py       thin FastAPI routes
 prompts/v1.md prompts/v2.md
 tests/
 runs/            4 live reports, runs/exchanges/<run_id>/<answer_id>.json, test_output.txt
-AI_ASSIST.md     disclosure log (append per phase)
 README.md
 ```
 
